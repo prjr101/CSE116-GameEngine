@@ -24,11 +24,7 @@ public class Configuration {
      * The game being played. Must be a valid option within the factory method
      * {@link GameFactory#getGame}.
      */
-HEAD
     public static final String GAME = "roguelike";
-
-    public static final String GAME = "sample game";
- 98bb75d721775cf6184ab972f89b856b23c9d8ef
 
     /**
      * Multiplier for increasing the size of the window and objects within the game.
