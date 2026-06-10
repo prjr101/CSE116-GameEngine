@@ -117,7 +117,23 @@ public class MinesweeperLevel extends Level {
      * @return a list of adjacent vectors
      */
     public ArrayList<Vector2D> getAdjacentVectors(Vector2D v) {
-        return new ArrayList<>();
+        ArrayList<Vector2D> adjacentVectorsList = new ArrayList<>();
+        if (!(v.getX() >= 0 && v.getX() < this.getWidth() && v.getY() >= 0 && v.getY() < this.getHeight())) {
+            return new ArrayList<>();
+        }
+        else {
+            for (int i = -1; i < 2; i++){
+                for (int j = -1; j < 2; j++){
+                    Vector2D adjVec = new Vector2D(v.getX()+(i), v.getY()+(j));
+                    if (adjVec.getX() >= 0 && adjVec.getX() < this.getWidth() && adjVec.getY() >= 0 && adjVec.getY() < this.getHeight()) {
+                        if (!(adjVec.getX() == v.getX() && adjVec.getY() == v.getY())) {
+                            adjacentVectorsList.addLast(adjVec);
+                        }
+                    }
+                }
+            }
+        }
+        return adjacentVectorsList;
     }
 
     /**

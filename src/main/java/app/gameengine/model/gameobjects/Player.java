@@ -21,7 +21,7 @@ import app.gameengine.Level;
  * @see Level
  */
 public class Player extends DynamicGameObject {
-
+    private ArrayList<Collectible> inventory = new ArrayList<>();
     private double iFrames = 0;
 
     /**
@@ -47,15 +47,37 @@ public class Player extends DynamicGameObject {
     }
 
     public String getActiveItemID() {
-        return "No item equipped";
+        if(inventory.isEmpty()) {
+            return "No item equipped";
+        }
+        else {
+            return getActiveItem().getItemID();
+        }
+    }
+
+    public Collectible getActiveItem() {
+        if (this.inventory.isEmpty()) {
+            return null;
+        }
+        return this.inventory.get(0);
     }
 
     public void cycleInventory() {
-        
+        if(!inventory.isEmpty()) {
+            this.inventory.add(this.inventory.remove(0));
+        }
     }
 
     public void clearInventory() {
-        
+        this.inventory.clear();
+    }
+
+    public void addInventoryItem(Collectible item) { inventory.add(item); }
+
+    public void removeActiveItem() {
+        if (!inventory.isEmpty()) {
+            inventory.remove(getActiveItem());
+        }
     }
 
     @Override
@@ -117,6 +139,9 @@ public class Player extends DynamicGameObject {
     public void update(double dt, Level level) {
         super.update(dt, level);
         this.iFrames -= dt;
+        for(Collectible item : this.inventory) {
+            item.update(dt, level);
+        }
     }
 
 }

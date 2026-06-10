@@ -7,6 +7,9 @@ import app.gameengine.Level;
 import app.gameengine.model.gameobjects.DynamicGameObject;
 import app.gameengine.model.gameobjects.StaticGameObject;
 
+import static java.lang.Math.max;
+import static java.lang.Math.min;
+
 /**
  * Physics engine for handling collision detection and resolution within a game.
  * <p>
@@ -43,7 +46,11 @@ public class PhysicsEngine {
      * @param object the object being updated
      */
     public void updateObject(double dt, DynamicGameObject object) {
-
+        double vx = object.getVelocity().getX();
+        double vy = object.getVelocity().getY();
+        double dx = vx*dt;
+        double dy = vy*dt;
+        object.setLocation(object.getLocation().getX()+dx, object.getLocation().getY()+dy);
     }
 
     /**
@@ -56,7 +63,7 @@ public class PhysicsEngine {
      * @return {@code true} if a collision is occurring, {@code false} otherwise
      */
     public boolean detectCollision(Hitbox hitbox1, Hitbox hitbox2) {
-        return false;
+        return getOverlap(hitbox1, hitbox2) > 0;
     }
 
     /**
@@ -72,7 +79,22 @@ public class PhysicsEngine {
      * @return the minimum overlapping distance
      */
     public double getOverlap(Hitbox hitbox1, Hitbox hitbox2) {
-        return 0.0;
+        double left1 = hitbox1.getLocation().getX();
+        double right1 = left1 + hitbox1.getDimensions().getX();
+        double top1 = hitbox1.getLocation().getY();
+        double bottom1 = top1 + hitbox1.getDimensions().getY();
+
+        double left2 = hitbox2.getLocation().getX();
+        double right2 = left2 + hitbox2.getDimensions().getX();
+        double top2 = hitbox2.getLocation().getY();
+        double bottom2 = top2 + hitbox2.getDimensions().getY();
+
+        double moveLeft = right1 - left2;
+        double moveRight = right2 - left1;
+        double moveUp = bottom1 - top2;
+        double moveDown = bottom2 - top1;
+
+        return Math.min(Math.min(moveLeft, moveRight), Math.min(moveUp, moveDown));
     }
 
     /**

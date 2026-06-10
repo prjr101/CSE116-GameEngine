@@ -1,6 +1,7 @@
 package app.games.commonobjects;
 
 import app.display.common.SpriteLocation;
+import app.gameengine.model.gameobjects.DynamicGameObject;
 import app.gameengine.model.gameobjects.StaticGameObject;
 
 /**
@@ -16,6 +17,13 @@ public class Spike extends StaticGameObject {
         this.defaultSpriteLocation = new SpriteLocation(2, 10);
         this.getHitbox().setDimensions(0.8, 0.8);
         this.getHitbox().setOffset(0.1, 0.1);
+    }
+
+    @Override
+    public void collideWithDynamicObject(DynamicGameObject otherObject) {
+        if(otherObject.isPlayer()) {
+            otherObject.destroy();
+        }
     }
 
     @Override

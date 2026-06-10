@@ -1,13 +1,12 @@
 package app.games.roguelikeobjects;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
+import java.util.*;
 
 import app.gameengine.Game;
 import app.gameengine.Level;
 import app.gameengine.LevelParser;
 import app.gameengine.model.physics.Vector2D;
+import app.gameengine.utils.GameUtils;
 import app.gameengine.utils.Randomizer;
 
 /**
@@ -114,20 +113,49 @@ public class RoguelikeGame extends Game {
      * Randomly generate each level within the game, and load the starting level.
      */
     private void generateMap() {
-        RoguelikeLevel start = getNextLevelToGenerate();
-        Vector2D position = new Vector2D(0, 0);
-        start.initialize(position);
-        this.addLevel(start);
+        Vector2D startingPosition = getRandomStartingPosition();
+        this.roomsGenerated = 0;
 
-        RoguelikeLevel bossRoom = RoguelikeLevelFactory.getBossLevel(this);
-        position = new Vector2D(1, 0);
-        bossRoom.initialize(position);
-        this.addLevel(bossRoom);
+        ArrayList<Vector2D> explored = new ArrayList<>();
+        explored.add(startingPosition);
 
-        start.openDoor(bossRoom);
-        bossRoom.openDoor(start);
+        Stack<Vector2D> positions = new Stack<>();
+        positions.push(startingPosition);
+        Stack<RoguelikeLevel> levels = new Stack<>();
 
-        this.loadLevel(start);
+        RoguelikeLevel startingLevel = null;
+        levels.push(null);
+
+        while (!positions.isEmpty() && roomsGenerated < this.maxRooms) {
+            Vector2D position = positions.pop();
+            RoguelikeLevel level = levels.pop();
+            RoguelikeLevel nextLevel = getNextLevelToGenerate();
+            nextLevel.initialize(position);
+            addLevel(nextLevel);
+            roomsGenerated++;
+
+
+            if (startingLevel == null) {
+                startingLevel = nextLevel;
+            }
+
+            if (level != null) {
+                nextLevel.openDoor(level);
+                level.openDoor(nextLevel);
+            }
+
+            ArrayList<Vector2D> directions = Randomizer.shuffleArrayList(DIRECTIONS);
+            for (Vector2D direction : directions) {
+                Vector2D location = new Vector2D(position.getX() + direction.getX(), position.getY() + direction.getY());
+                if (GameUtils.isInBounds(location, mapSize) && !explored.contains(location)) {
+                    positions.add(location);
+                    explored.add(location);
+                    levels.push(nextLevel);
+                }
+            }
+        }
+        this.previousLevel = null;
+        this.loadLevel(startingLevel);
     }
 
     private Vector2D getRandomStartingPosition() {

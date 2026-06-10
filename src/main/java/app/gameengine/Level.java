@@ -9,10 +9,7 @@ import app.display.common.controller.BasicMouseControls;
 import app.display.common.controller.KeyboardControls;
 import app.display.common.controller.MouseControls;
 import app.display.common.effects.Effect;
-import app.gameengine.model.gameobjects.DynamicGameObject;
-import app.gameengine.model.gameobjects.GameObject;
-import app.gameengine.model.gameobjects.Player;
-import app.gameengine.model.gameobjects.StaticGameObject;
+import app.gameengine.model.gameobjects.*;
 import app.gameengine.model.physics.PhysicsEngine;
 import app.gameengine.model.physics.Vector2D;
 
@@ -427,7 +424,10 @@ public abstract class Level {
      * in the player's inventory
      */
     public void actionButtonPressed() {
-        
+        Collectible activeItem = this.getPlayer().getActiveItem();
+        if (activeItem != null) {
+            activeItem.use(this);
+        }
     }
 
     /**

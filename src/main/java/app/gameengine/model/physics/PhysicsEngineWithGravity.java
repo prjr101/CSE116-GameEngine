@@ -21,6 +21,7 @@ import javafx.util.Pair;
 public class PhysicsEngineWithGravity extends PhysicsEngine {
 
     private static double DEFAULT_GRAVITY = 40;
+    private double gravity;
 
     public PhysicsEngineWithGravity() {
         this(DEFAULT_GRAVITY);
@@ -28,9 +29,25 @@ public class PhysicsEngineWithGravity extends PhysicsEngine {
 
     public PhysicsEngineWithGravity(double gravity) {
         super();
+        this.gravity = gravity;
+    }
+
+    public double getGravity() {
+        return this.gravity;
+    }
+
+    public void setGravity(double gravity) {
+        this.gravity = gravity;
     }
 
     @Override
+    public void updateObject(double dt, DynamicGameObject object) {
+        if(!object.isOnGround() && !object.isPlayer()) {
+            object.setVelocity(object.getVelocity().getX(), object.getVelocity().getY()+(gravity*dt));
+        }
+        super.updateObject(dt, object);
+    }
+
     public void processAllCollisions(Level level) {
         ArrayList<DynamicGameObject> dynamicObjects = level.getDynamicObjects();
         ArrayList<StaticGameObject> staticObjects = level.getStaticObjects();

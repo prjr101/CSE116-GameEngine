@@ -6,6 +6,9 @@ import java.util.HashMap;
 
 import app.display.common.SpriteLocation;
 import app.display.common.sound.AudioManager;
+import app.gameengine.model.ai.DecisionTree;
+import app.gameengine.model.ai.pacman.*;
+import app.gameengine.model.datastructures.BinaryTreeNode;
 import app.gameengine.model.gameobjects.Agent;
 import app.gameengine.model.gameobjects.DynamicGameObject;
 import app.gameengine.model.gameobjects.StaticGameObject;
@@ -28,6 +31,7 @@ public class Ghost extends Agent {
     private String color;
     private int spriteRow;
     private String state = "Spawner";
+    private DecisionTree decisionTree;
 
     public Ghost(double x, double y, PacmanGame game, String color) {
         super(x, y, 1);
@@ -45,6 +49,16 @@ public class Ghost extends Agent {
             default:
                 yield 0;
         };
+        this.decisionTree = new DecisionTree(new BinaryTreeNode<>(new IsActive(this, this.color),
+                new BinaryTreeNode<>(new Dead(this, this.game, this.color),
+                        new BinaryTreeNode<>(new Flee(this, this.game, this.color),
+                                new BinaryTreeNode<>(new Idle(this, this.color),null,null),
+                                new BinaryTreeNode<>(new Flee(this, this.game, this.color),null,null)),
+                        new BinaryTreeNode<>(new Dead(this, this.game, this.color),null,null)),
+                new BinaryTreeNode<>(new Chase(this, this.game, this.color),
+                        new BinaryTreeNode<>(new Scatter(this, this.game, this.color),null,null),
+                        new BinaryTreeNode<>(new Chase(this, this.game, this.color),null,null))));
+
         this.spriteSheetFilename = "pacman/ghosts.png";
         this.defaultSpriteLocation = new SpriteLocation(0, this.spriteRow);
         this.initAnimations();

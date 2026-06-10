@@ -16,6 +16,6 @@ public interface Comparator<T> {
      * @param b the second object
      * @return {@code true} if the first object comes first, {@code false} otherwise
      */
-    boolean compare(T a, T b);
+    abstract boolean compare(T a, T b);
 
 }

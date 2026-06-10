@@ -1,6 +1,10 @@
 package app.games.topdownobjects;
 
 import app.display.common.SpriteLocation;
+import app.gameengine.model.ai.DecisionTree;
+import app.gameengine.model.ai.roguelike.ShootHomingProjectile;
+import app.gameengine.model.ai.roguelike.ShootPlayer;
+import app.gameengine.model.datastructures.BinaryTreeNode;
 
 public class Archer extends Enemy {
 
@@ -12,6 +16,10 @@ public class Archer extends Enemy {
         this.animations.remove("attack_down");
         this.animations.remove("attack_left");
         this.animations.remove("attack_right");
+        this.setDecisionTree(new DecisionTree(
+                new BinaryTreeNode<>(new ShootPlayer(this, "ArcherGoblin", 1),
+                        null,
+                        null)));
     }
 
     public Archer(double x, double y) {

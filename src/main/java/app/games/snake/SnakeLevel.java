@@ -6,6 +6,8 @@ import app.display.common.Background;
 import app.gameengine.Game;
 import app.gameengine.Level;
 import app.gameengine.model.physics.PhysicsEngine;
+import app.gameengine.model.physics.Vector2D;
+import app.gameengine.utils.Randomizer;
 import app.gameengine.utils.Timer;
 
 /**
@@ -20,19 +22,18 @@ import app.gameengine.utils.Timer;
  */
 public class SnakeLevel extends Level {
 
-    private Timer timer;
-    private ArrayList<SnakeFood> food = new ArrayList<>();
-    private ArrayList<SnakeBody> tail = new ArrayList<>();
-    private int lengthIncrease;
-    private int startingLength;
-    private int numFood;
+    private final Timer timer;
+    private final ArrayList<SnakeFood> food = new ArrayList<>();
+    private final ArrayList<SnakeBody> tail = new ArrayList<>();
+    private final int lengthIncrease;
+    private final int startingLength;
+    private final int numFood;
 
     public SnakeLevel(Game game, int size, Timer timer, String name) {
         this(game, size, timer, name, 1, 3, 1);
     }
 
-    public SnakeLevel(Game game, int size, Timer timer, String name, int lengthIncrease, int startingLength,
-            int numFood) {
+    public SnakeLevel(Game game, int size, Timer timer, String name, int lengthIncrease, int startingLength, int numFood) {
         super(game, new PhysicsEngine(), size, size, name);
         this.timer = timer;
         this.lengthIncrease = Math.min(lengthIncrease, size * size - startingLength);
@@ -66,7 +67,13 @@ public class SnakeLevel extends Level {
      * is to prevent the snake from leaving the confines of the level.
      */
     public void wallOffBoundary() {
-
+        for (int i = -1; i <= this.height; i++){
+            for (int j = -1; j <= this.width; j++){
+                if (i == -1 || i == this.height || j == -1 || j == this.width){
+                    this.addStaticObject(new SnakeWall(i,j));
+                }
+            }
+        }
     }
 
     /**
@@ -78,7 +85,42 @@ public class SnakeLevel extends Level {
      * static objects.
      */
     public void spawnFood() {
+        if (this.tail.size()+1 == this.width*this.height){
+            this.game.advanceLevel();
+            return;
+        }
+        if (this.tail.size()+1 + this.getFood().size() == width * height){
+            return;
+        }
+        Vector2D v = Randomizer.randomIntVector2D(new Vector2D(width, height), new ArrayList<>());
+        boolean valid = true;
+        for (SnakeFood snakeFood : this.food) {
+            if (v.getX() == snakeFood.getLocation().getX() && v.getY() == snakeFood.getLocation().getY()) {
+                valid = false;
+                break;
+            }
+        }
 
+        if (this.getPlayer().getLocation().getX() == v.getX() && this.getPlayer().getLocation().getY() == v.getY()){
+            valid = false;
+        }
+
+        for (SnakeBody snakeBody : this.tail) {
+            if (v.getX() == snakeBody.getLocation().getX() && v.getY() == snakeBody.getLocation().getY()) {
+                valid = false;
+                break;
+            }
+        }
+
+        if (valid){
+            SnakeFood food = new SnakeFood(v.getX(), v.getY(), this);
+            this.addStaticObject(food);
+            this.getFood().add(food);
+        }
+
+        else {
+            spawnFood();
+        }
     }
 
     /**
@@ -90,7 +132,39 @@ public class SnakeLevel extends Level {
      * well as its list of static objects.
      */
     public void lengthenSnake() {
+    //(1, 0) is right, (0, 1) is down, (-1, 0) is left, and (0, -1) is up
+        if (this.tail.isEmpty()){
+            for (int i = 0; i < this.lengthIncrease; i++){
+                if (this.getPlayer().getOrientation().getX() == 1) {
+                    SnakeBody body = new SnakeBody(this.getPlayer().getLocation().getX()-1, this.getPlayer().getLocation().getY());
+                    this.tail.addFirst(body);
+                    this.addStaticObject(body);
+                }
+                else if (this.getPlayer().getOrientation().getX() == -1) {
+                    SnakeBody body = new SnakeBody(this.getPlayer().getLocation().getX()+1, this.getPlayer().getLocation().getY());
+                    this.tail.addFirst(body);
+                    this.addStaticObject(body);
+                }
+                else if (this.getPlayer().getOrientation().getY() == 1) {
+                    SnakeBody body = new SnakeBody(this.getPlayer().getLocation().getX(), this.getPlayer().getLocation().getY()-1);
+                    this.tail.addFirst(body);
+                    this.addStaticObject(body);
+                }
+                else if (this.getPlayer().getOrientation().getY() == -1) {
+                    SnakeBody body = new SnakeBody(this.getPlayer().getLocation().getX(), this.getPlayer().getLocation().getY()+1);
+                    this.tail.addFirst(body);
+                    this.addStaticObject(body);
+                }
+            }
+        }
 
+        else {
+            for (int i = 0; i < this.lengthIncrease; i++){
+                SnakeBody body = new SnakeBody(this.tail.getFirst().getLocation().getX(), this.tail.getFirst().getLocation().getY());
+                this.tail.addFirst(body);
+                this.addStaticObject(body);
+            }
+        }
     }
 
     /**
@@ -98,7 +172,29 @@ public class SnakeLevel extends Level {
      * stack behind the head of the snake.
      */
     public void spawnSnake() {
-
+        for (int i = 0; i < this.startingLength-1; i++) {
+            Vector2D orientation = new Vector2D(this.getPlayer().getOrientation().getX(), this.getPlayer().getOrientation().getY());
+            if (this.getPlayer().getOrientation().getX() == 1) {
+                SnakeBody body = new SnakeBody(this.getPlayer().getLocation().getX()-1, this.getPlayer().getLocation().getY());
+                this.tail.addFirst(body);
+                this.addStaticObject(body);
+            }
+            else if (this.getPlayer().getOrientation().getX() == -1) {
+                SnakeBody body = new SnakeBody(this.getPlayer().getLocation().getX()+1, this.getPlayer().getLocation().getY());
+                this.tail.addFirst(body);
+                this.addStaticObject(body);
+            }
+            else if (this.getPlayer().getOrientation().getY() == 1) {
+                SnakeBody body = new SnakeBody(this.getPlayer().getLocation().getX(), this.getPlayer().getLocation().getY()-1);
+                this.tail.addFirst(body);
+                this.addStaticObject(body);
+            }
+            else if (this.getPlayer().getOrientation().getY() == -1) {
+                SnakeBody body = new SnakeBody(this.getPlayer().getLocation().getX(), this.getPlayer().getLocation().getY()+1);
+                this.tail.addFirst(body);
+                this.addStaticObject(body);
+            }
+        }
     }
 
     /**
@@ -106,7 +202,21 @@ public class SnakeLevel extends Level {
      * tile, including both body segments and the head of the snake.
      */
     private void moveSnake() {
-
+        //(1, 0) is right, (0, 1) is down, (-1, 0) is left, and (0, -1) is up
+        Vector2D location = new Vector2D(this.getPlayer().getLocation().getX(), this.getPlayer().getLocation().getY());
+        double x = location.getX();
+        double y = location.getY();
+        double newX;
+        double newY;
+        for (int i = tail.size()-1; i >= 0; i--) {
+            newX = tail.get(i).getLocation().getX();
+            newY = tail.get(i).getLocation().getY();
+            this.tail.get(i).setLocation(x, y);
+            x = newX;
+            y = newY;
+        }
+        Vector2D orientation = new Vector2D(this.getPlayer().getOrientation().getX(), this.getPlayer().getOrientation().getY());
+        this.getPlayer().setLocation(location.getX()+orientation.getX(),location.getY()+orientation.getY());
     }
 
     @Override

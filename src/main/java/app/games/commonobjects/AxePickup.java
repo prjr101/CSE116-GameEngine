@@ -2,7 +2,9 @@ package app.games.commonobjects;
 
 import app.gameengine.Game;
 import app.display.common.SpriteLocation;
+import app.gameengine.Level;
 import app.gameengine.model.gameobjects.Collectible;
+import app.gameengine.utils.Timer;
 
 /**
  * A collectible which allows the player to throw damaging axe projectiles.
@@ -11,11 +13,30 @@ import app.gameengine.model.gameobjects.Collectible;
  * @see PlayerAxeProjectile
  */
 public class AxePickup extends Collectible {
+    private Timer timer;
 
     public AxePickup(double x, double y, Game game) {
         super(x, y, game, "Axe");
         this.spriteSheetFilename = "MiniWorldSprites/Objects/Axe.png";
         this.defaultSpriteLocation = new SpriteLocation(0, 0);
+        this.timer = new Timer(.25);
+    }
+
+    public Timer getTimer() {
+        return this.timer;
+    }
+
+    @Override
+    public void use(Level level) {
+        if(timer.check() >= 1) {
+            level.getPlayer().fireProjectile(new PlayerAxeProjectile(0,0), 5, level);
+        }
+    }
+
+    @Override
+    public void update(double dt, Level level) {
+        super.update(dt, level);
+        this.timer.advance(dt);
     }
 
     @Override

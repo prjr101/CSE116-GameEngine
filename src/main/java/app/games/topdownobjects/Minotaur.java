@@ -4,6 +4,10 @@ import java.util.ArrayList;
 import java.util.Arrays;
 
 import app.display.common.SpriteLocation;
+import app.gameengine.model.ai.DecisionTree;
+import app.gameengine.model.ai.roguelike.MoveTowardPlayer;
+import app.gameengine.model.ai.roguelike.MoveTowardPlayerAvoidWalls;
+import app.gameengine.model.datastructures.BinaryTreeNode;
 
 public class Minotaur extends Enemy {
 
@@ -11,6 +15,10 @@ public class Minotaur extends Enemy {
         super(x, y, maxHP, strength);
         this.spriteSheetFilename = "MiniWorldSprites/Characters/Monsters/Orcs/Minotaur.png";
         this.defaultSpriteLocation = new SpriteLocation(0, 0);
+        this.setDecisionTree(new DecisionTree(
+                new BinaryTreeNode<>(new MoveTowardPlayer(this, "Minotaur"),
+                        null,
+                        null)));
     }
 
     public Minotaur(double x, double y) {

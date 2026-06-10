@@ -4,10 +4,14 @@ import java.util.ArrayList;
 
 import app.Settings;
 import app.gameengine.Level;
+import app.gameengine.model.ai.DecisionTree;
 import app.gameengine.model.datastructures.LinkedListNode;
 import app.gameengine.model.physics.Vector2D;
+import app.gameengine.utils.PathfindingUtils;
 import app.gameengine.utils.Timer;
 import app.games.commonobjects.PathTile;
+
+import static app.gameengine.model.physics.Vector2D.euclideanDistance;
 
 /**
  * A {@link DynamicGameObject} capable of thinking.
@@ -24,6 +28,7 @@ public abstract class Agent extends DynamicGameObject {
     protected double movementSpeed = 1.0;
     private Vector2D lastOrientation = this.getOrientation().copy();
     private LinkedListNode<Vector2D> path;
+    private DecisionTree decisionTree;
 
     private Timer timer = new Timer(1);
     private ArrayList<PathTile> tiles = new ArrayList<>();
@@ -93,12 +98,40 @@ public abstract class Agent extends DynamicGameObject {
      * @param dt the amount of time since the last update
      */
     public void followPath(double dt) {
-
+        if(this.getPath() == null) {
+            this.setVelocity(0,0);
+        }
+        else if(euclideanDistance(this.getLocation(), this.getPath().getValue())<this.movementSpeed*dt) {
+            this.setVelocity(0,0);
+            this.setLocation(this.getPath().getValue().getX(), this.getPath().getValue().getY());
+            this.setPath(this.getPath().getNext());
+        }
+        else {
+            if(this.getLocation().getX() > this.getPath().getValue().getX()) {
+                this.setOrientation(-1,0);
+                this.setVelocity(-this.movementSpeed,0);
+            }
+            else if(this.getLocation().getX() < this.getPath().getValue().getX()) {
+                this.setOrientation(1,0);
+                this.setVelocity(this.movementSpeed,0);
+            }
+            else if(this.getLocation().getY() > this.getPath().getValue().getY()) {
+                this.setOrientation(0,-1);
+                this.setVelocity(0,-this.movementSpeed);
+            }
+            else {
+                this.setOrientation(0,1);
+                this.setVelocity(0,this.movementSpeed);
+            }
+        }
     }
 
     @Override
     public void update(double dt, Level level) {
         super.update(dt, level);
+        if(this.getDecisionTree() != null) {
+            this.getDecisionTree().traverse(dt, level);
+        }
         if (Settings.showPaths() && timer.tick(dt) > 0) {
             this.tiles.forEach(PathTile::destroy);
             tiles.clear();
@@ -114,6 +147,14 @@ public abstract class Agent extends DynamicGameObject {
             this.lastOrientation = this.getOrientation().copy();
             String anim = "walk_" + this.getDirection();
             this.setAnimationState(anim);
+        }
+        if(this.path == null) {
+            LinkedListNode<Vector2D> pathList = PathfindingUtils.findPath(this.getLocation(), level.getPlayer().getLocation());
+            this.setPath(pathList);
+        }
+        //will need to be changed later
+        else {
+            followPath(dt);
         }
     }
 
@@ -132,4 +173,7 @@ public abstract class Agent extends DynamicGameObject {
         this.tiles.forEach(PathTile::destroy);
     }
 
+    public DecisionTree getDecisionTree() { return decisionTree; }
+
+    public void setDecisionTree(DecisionTree decisionTree) { this.decisionTree = decisionTree; }
 }

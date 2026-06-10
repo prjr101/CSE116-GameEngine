@@ -16,6 +16,7 @@ import app.gameengine.model.gameobjects.Player;
  * @see Level
  */
 public class LinearGame extends Game {
+    private LinkedListNode<Level> levels;
 
     public LinearGame() {
         super();
@@ -25,4 +26,68 @@ public class LinearGame extends Game {
         super(player);
     }
 
+    public LinkedListNode<Level> getLevelList() {
+        return this.levels;
+    }
+
+    public void setLevelList(LinkedListNode<Level> levels) {
+        this.levels = levels;
+    }
+
+    public void addLevel(Level level) {
+        LinkedListNode<Level> newNode = new LinkedListNode<>(level, null);
+        if(this.levels == null) {
+            this.levels = newNode;
+        }
+        else {
+            LinkedListNode<Level> current = this.levels;
+            while(current.getNext() != null) {
+                current = current.getNext();
+            }
+            current.setNext(newNode);
+        }
+    }
+
+    public void advanceLevel() {
+        LinkedListNode<Level> current = this.levels;
+        while(current != null) {
+            if(current.getValue().getName().equals(getCurrentLevel().getName())) {
+                if(current.getNext() != null) {
+                    this.loadLevel(current.getNext().getValue());
+                }
+                return;
+            }
+            current = current.getNext();
+        }
+    }
+
+    public void removeLevelByName(String levelName) {
+        if(this.levels == null) {
+            return;
+        }
+        if(this.levels.getValue().getName().equals(levelName)) {
+            this.levels = this.levels.getNext();
+            return;
+        }
+        LinkedListNode<Level> current = this.levels;
+        while(current.getNext() != null) {
+            if(current.getNext().getValue().getName().equals(levelName)) {
+                current.setNext(current.getNext().getNext());
+                return;
+            }
+            current = current.getNext();
+        }
+    }
+
+    public void reset() {
+        if (this.levels != null) {
+            LinkedListNode<Level> current = this.levels.getNext();
+            while (current != null) {
+                current.getValue().reset();
+                current = current.getNext();
+            }
+            this.levels.getValue().reset();
+            this.currentLevel = levels.getValue();
+        }
+    }
 }
